@@ -38,10 +38,10 @@ elif DjangoVersion[0] == 1:
 else:
     _DJANGO_VERSION = 9
 
-from sql_server.pyodbc.operations import DatabaseOperations
-from sql_server.pyodbc.client import DatabaseClient
-from sql_server.pyodbc.creation import DatabaseCreation
-from sql_server.pyodbc.introspection import DatabaseIntrospection
+from vertica.pyodbc.operations import DatabaseOperations
+from vertica.pyodbc.client import DatabaseClient
+from vertica.pyodbc.creation import DatabaseCreation
+from vertica.pyodbc.introspection import DatabaseIntrospection
 import os
 import warnings
 
@@ -269,12 +269,14 @@ class CursorWrapper(object):
         sql = self.format_sql(sql, len(params))
         params = self.format_params(params)
         self.last_params = params
+        self.last_params = params
 
-        from django.db import connection
-        from pprint import pprint
-        res = self.cursor.execute(sql, params)
-        pprint(connection.queries)
-        return res
+        return self.cursor.execute(sql, params)
+#        from django.db import connection
+#        from pprint import pprint
+#        res = self.cursor.execute(sql, params)
+#        pprint(connection.queries)
+#        return res
 
     def executemany(self, sql, params_list):
         sql = self.format_sql(sql)
