@@ -1,12 +1,12 @@
 from django.db.backends import BaseDatabaseOperations
-from sql_server.pyodbc import query
+from vertica.pyodbc import query
 import datetime
 import time
 import decimal
 import re
 
 class DatabaseOperations(BaseDatabaseOperations):
-#    compiler_module = "sql_server.pyodbc.compiler"
+#    compiler_module = "vertica.pyodbc.compiler"
     def __init__(self):
         super(DatabaseOperations, self).__init__()
         self._vertica_ver = None
