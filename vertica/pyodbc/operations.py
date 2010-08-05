@@ -50,8 +50,6 @@ class DatabaseOperations(BaseDatabaseOperations):
         """
         return "DATE_TRUNC ( %s , %s)" % (lookup_type, field_name)
 
-    def deferrable_sql(self):
-        return " DEFERRABLE INITIALLY DEFERRED"
 
     def field_cast_sql(self, db_type):
         """
@@ -63,7 +61,6 @@ class DatabaseOperations(BaseDatabaseOperations):
         if db_type == 'inet':
             return 'HOST(%s)'
         return '%s'
-
 
 
     def fulltext_search_sql(self, field_name):

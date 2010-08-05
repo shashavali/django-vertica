@@ -300,9 +300,7 @@ class CursorWrapper(object):
         # yet, so we need to decode utf-8 data coming from the DB
         fr = []
         for row in rows:
-            if row in ('1', '0'):
-                fr.append(bool(int(row)))
-            elif isinstance(row, types.StringType):
+            if isinstance(row, types.StringType):
                 fr.append(row.decode('utf-8'))
             else:
                 fr.append(row)
