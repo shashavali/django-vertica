@@ -79,7 +79,7 @@ class DatabaseOperations(BaseDatabaseOperations):
         This method also receives the table name and the name of the primary-key
         column.
         """
-        cursor.execute("SELECT CURRVAL('%s_%s_seq')" % (table_name, pk_name))
+        cursor.execute("SELECT LAST_INSERT_ID()")
         return cursor.fetchone()[0]
 
     def lookup_cast(self, lookup_type):

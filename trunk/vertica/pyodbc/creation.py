@@ -1,7 +1,9 @@
-from django.db.backends.creation import BaseDatabaseCreation
+from django.db.backends.creation import BaseDatabaseCreation,\
+    TEST_DATABASE_PREFIX
 import base64
 from django.utils.hashcompat import md5_constructor
 import random
+import sys
 
 class DataTypesWrapper(dict):
     def __getitem__(self, item):
@@ -51,6 +53,45 @@ class DatabaseCreation(BaseDatabaseCreation):
     }
     #})
 
+    def _create_test_db(self, verbosity, autoclobber):
+        "Internal implementation - creates the test db tables."
+        suffix = self.sql_table_creation_suffix()
+
+        if self.connection.settings_dict['TEST_NAME']:
+            test_database_name = self.connection.settings_dict['TEST_NAME']
+        else:
+            test_database_name = TEST_DATABASE_PREFIX + self.connection.settings_dict['NAME']
+
+        qn = self.connection.ops.quote_name
+
+        # Create the test database and connect to it. We need to autocommit
+        # if the database supports it because PostgreSQL doesn't allow
+        # CREATE/DROP SCHEMA statements within transactions.
+        cursor = self.connection.cursor()
+        self.set_autocommit()
+        try:
+            cursor.execute("CREATE SCHEMA %s %s" % (qn(test_database_name), suffix))
+        except Exception, e:
+            sys.stderr.write("Got an error creating the test database: %s\n" % e)
+            if not autoclobber:
+                confirm = raw_input("Type 'yes' if you would like to try deleting the test database '%s', or 'no' to cancel: " % test_database_name)
+            if autoclobber or confirm == 'yes':
+                try:
+                    if verbosity >= 1:
+                        print "Destroying old test database..."
+                    cursor.execute("DROP SCHEMA %s" % qn(test_database_name))
+                    if verbosity >= 1:
+                        print "Creating test database..."
+                    cursor.execute("CREATE SCHEMA %s %s" % (qn(test_database_name), suffix))
+                except Exception, e:
+                    sys.stderr.write("Got an error recreating the test database: %s\n" % e)
+                    sys.exit(2)
+            else:
+                print "Tests cancelled."
+                sys.exit(1)
+
+        return test_database_name
+
     def _destroy_test_db(self, test_database_name, verbosity):
         "Internal implementation - remove the test db tables."
         cursor = self.connection.cursor()
@@ -58,6 +99,6 @@ class DatabaseCreation(BaseDatabaseCreation):
         #time.sleep(1) # To avoid "database is being accessed by other users" errors.
         cursor.execute("ALTER DATABASE %s SET SINGLE_USER WITH ROLLBACK IMMEDIATE " % \
                 self.connection.ops.quote_name(test_database_name))
-        cursor.execute("DROP DATABASE %s" % \
+        cursor.execute("DROP SCHEMA %s" % \
                 self.connection.ops.quote_name(test_database_name))
         self.connection.close()
