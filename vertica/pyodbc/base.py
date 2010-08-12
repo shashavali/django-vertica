@@ -2,6 +2,8 @@
 Vertica SQL Server database backend for Django.
 """
 import types
+import sys
+import pyodbc
 
 try:
     import pyodbc as Database
@@ -199,7 +201,11 @@ class DatabaseWrapper(BaseDatabaseWrapper):
 
             if 'extra_params' in options:
                 cstr_parts.append(options['extra_params'])
-
+            
+            if sys.maxunicode >= 6600:
+                cstr_parts.append('WideCharSizeIn=4')
+                cstr_parts.append('WideCharSizeOut=4')
+            
             connstr = ';'.join(cstr_parts)
             autocommit = options.get('autocommit', False)
             if self.unicode_results:
@@ -208,7 +214,7 @@ class DatabaseWrapper(BaseDatabaseWrapper):
                         unicode_results='True')
             else:
                 self.connection = Database.connect(connstr, \
-                        autocommit=autocommit)
+                        autocommit=autocommit, ansi=True)
             connection_created.send(sender=self.__class__)
 
         cursor = self.connection.cursor()
@@ -271,7 +277,13 @@ class CursorWrapper(object):
         self.last_params = params
         self.last_params = params
 
-        return self.cursor.execute(sql, params)
+        print (sql, params)
+        try:
+            return self.cursor.execute(sql, params)
+        except (pyodbc.Error, ), e:
+            if e.args[0] == '07002' and None in params:
+                return self.cursor.execute("select * from dual where dummy='1'")
+            raise
 #        from django.db import connection
 #        from pprint import pprint
 #        res = self.cursor.execute(sql, params)
