@@ -1,5 +1,4 @@
 from django.db.backends import BaseDatabaseOperations
-from vertica.pyodbc import query
 import datetime
 import time
 import decimal

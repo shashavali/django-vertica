@@ -75,10 +75,7 @@ DatabaseError = Database.DatabaseError
 IntegrityError = Database.IntegrityError
 
 class DatabaseFeatures(BaseDatabaseFeatures):
-    uses_custom_query_class = True
-    can_use_chunked_reads = False
-    #uses_savepoints = True
-
+    pass
 
 class DatabaseWrapper(BaseDatabaseWrapper):
     drv_name = None
@@ -207,7 +204,7 @@ class DatabaseWrapper(BaseDatabaseWrapper):
                 cstr_parts.append('WideCharSizeOut=4')
             
             connstr = ';'.join(cstr_parts)
-            autocommit = options.get('autocommit', False)
+            autocommit = options.get('autocommit', True)
             if self.unicode_results:
                 self.connection = Database.connect(connstr, \
                         autocommit=autocommit, \
@@ -279,7 +276,9 @@ class CursorWrapper(object):
 
         print (sql, params)
         try:
-            return self.cursor.execute(sql, params)
+            r = self.cursor.execute(sql, params)
+            self.cursor.connection.commit()
+            return r
         except (pyodbc.Error, ), e:
             if e.args[0] == '07002' and None in params:
                 return self.cursor.execute("select * from dual where dummy='1'")
