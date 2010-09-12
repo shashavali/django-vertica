@@ -198,11 +198,11 @@ class DatabaseWrapper(BaseDatabaseWrapper):
 
             if 'extra_params' in options:
                 cstr_parts.append(options['extra_params'])
-            
+
             if sys.maxunicode >= 6600:
                 cstr_parts.append('WideCharSizeIn=4')
                 cstr_parts.append('WideCharSizeOut=4')
-            
+
             connstr = ';'.join(cstr_parts)
             autocommit = options.get('autocommit', True)
             if self.unicode_results:
@@ -267,22 +267,38 @@ class CursorWrapper(object):
                 fp.append(p)
         return tuple(fp)
 
+    def fix_none(self, sql, params):
+        '''
+        format Nones to 'NULL' in order to bypass the UnixODBC exception,
+        when None is in parameters
+        '''
+        if len(params) < 1 or not None in params:
+            return sql, params
+        sql_parts = sql.split('?')
+        new_sql = sql_parts[0]
+        new_params = []
+        for i, param in enumerate(params):
+            if param is None:
+                new_sql = '%sNULL%s' % (new_sql, sql_parts[i + 1])
+            else:
+                new_params.append(param)
+                new_sql = '%s?%s' % (new_sql, sql_parts[i + 1])
+        return new_sql, new_params
+
     def execute(self, sql, params=()):
+
+        self.last_params = params
         self.last_sql = sql
+
         sql = self.format_sql(sql, len(params))
         params = self.format_params(params)
-        self.last_params = params
-        self.last_params = params
+        sql, params = self.fix_none(sql, params)
 
         print (sql, params)
-        try:
-            r = self.cursor.execute(sql, params)
-            self.cursor.connection.commit()
-            return r
-        except (pyodbc.Error, ), e:
-            if e.args[0] == '07002' and None in params:
-                return self.cursor.execute("select * from dual where dummy='1'")
-            raise
+        r = self.cursor.execute(sql, params)
+        self.cursor.connection.commit()
+        return r
+
 #        from django.db import connection
 #        from pprint import pprint
 #        res = self.cursor.execute(sql, params)
