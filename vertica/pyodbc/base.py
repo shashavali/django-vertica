@@ -294,7 +294,7 @@ class CursorWrapper(object):
         params = self.format_params(params)
         sql, params = self.fix_none(sql, params)
 
-        print (sql, params)
+#        print (sql, params)
         r = self.cursor.execute(sql, params)
         self.cursor.connection.commit()
         return r

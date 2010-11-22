@@ -1,4 +1,4 @@
-from django.db.backends.creation import BaseDatabaseCreation,\
+from django.db.backends.creation import BaseDatabaseCreation, \
     TEST_DATABASE_PREFIX
 import base64
 from django.utils.hashcompat import md5_constructor
@@ -25,9 +25,8 @@ class DatabaseCreation(BaseDatabaseCreation):
     # Any format strings starting with "qn_" are quoted before being used in the
     # output (the "qn_" prefix is stripped before the lookup is performed.
 
-#    data_types = DataTypesWrapper({
     data_types = {
-        'AutoField':         'IDENTITY (1, 1)',
+        'AutoField':         'IDENTITY (1, 1, 1)',
         'BooleanField':      'BOOLEAN',
         'CharField':         'VARCHAR(%(max_length)s)',
         'CommaSeparatedIntegerField': 'VARCHAR(%(max_length)s)',
@@ -51,7 +50,6 @@ class DatabaseCreation(BaseDatabaseCreation):
         'TextField':         'VARCHAR(65000)',
         'TimeField':         'TIME',
     }
-    #})
 
     def _create_test_db(self, verbosity, autoclobber):
         "Internal implementation - creates the test db tables."
