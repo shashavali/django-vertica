@@ -36,9 +36,9 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
         """
         Returns a list of table names in the current database.
         """
-        db = cursor.db.alias
-        if db == 'default':
-            db = 'public'
+#        db = cursor.db.alias
+#        if db == 'default':
+        db = 'public'
         cursor.execute("SELECT TABLE_NAME FROM V_CATALOG.TABLES WHERE is_system_table = 'f' and table_schema = '%s'" % db)
         return [row[0] for row in cursor.fetchall()]
 
