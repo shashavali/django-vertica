@@ -345,10 +345,10 @@ class CursorWrapper(object):
     def fetchall(self):
         return [self.format_results(row) for row in self.cursor.fetchall()]
 
-#    def __getattr__(self, attr):
-#        if attr in self.__dict__:
-#            return self.__dict__[attr]
-#        return getattr(self.cursor, attr)
+    def __getattr__(self, attr):
+        if attr in self.__dict__:
+            return self.__dict__[attr]
+        return getattr(self.cursor, attr)
 
     def __iter__(self):
         return iter(self.cursor)
