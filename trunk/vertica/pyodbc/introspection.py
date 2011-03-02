@@ -70,7 +70,7 @@ WHERE fk.TABLE_NAME = %s
         relations = {}
         for row in cursor.fetchall():
             # row[0] and row[1] are like "{2}", so strip the curly braces.
-            relations[int(row[0].strip()) - 1] = (int(row[1].strip()) - 1, row[2])
+            relations[row[0]] = (row[1], row[2])
         return relations
 
     def get_indexes(self, cursor, table_name):
@@ -82,14 +82,13 @@ WHERE fk.TABLE_NAME = %s
              'db_index': boolean representing whether it's a non-unique index}
         """
         cursor.execute("""
-SELECT col.COLUMN_NAME, pk.CONSTRAINT_TYPE
-FROM PRIMARY_KEYS pk
-right join COLUMNS col on pk.COLUMN_NAME = col.COLUMN_NAME
-                        and pk.TABLE_NAME = col.TABLE_NAME
-WHERE fk.TABLE_NAME = %s
-""", [table_name])
+SELECT col.COLUMN_NAME,pk.CONSTRAINT_TYPE
+FROM V_CATALOG.COLUMNS col
+left join V_CATALOG.PRIMARY_KEYS pk
+  ON col.TABLE_NAME = pk.TABLE_NAME AND col.COLUMN_NAME = pk.COLUMN_NAME
+WHERE col.TABLE_NAME = %s""", [table_name])
         indexes = {}
         for row in cursor.fetchall():
-            indexes[row[0]] = {'primary_key': row[1] == 'p', 'unique': True}
+            indexes[row[0]] = {'primary_key': row[1] == 'p', 'unique': False}
         return indexes
 
