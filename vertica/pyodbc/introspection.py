@@ -1,35 +1,22 @@
 from django.db.backends import BaseDatabaseIntrospection
 import pyodbc as Database
-
-SQL_AUTOFIELD = -777555
+import types
+import datetime
+import decimal
 
 class DatabaseIntrospection(BaseDatabaseIntrospection):
     # Map type codes to Django Field types.
     data_types_reverse = {
-        SQL_AUTOFIELD:                  'AutoField',
-        Database.SQL_BIGINT:            'IntegerField',
-        #Database.SQL_BINARY:            ,
-        Database.SQL_BIT:               'BooleanField',
-        Database.SQL_CHAR:              'CharField',
-        Database.SQL_DECIMAL:           'DecimalField',
-        Database.SQL_DOUBLE:            'FloatField',
-        Database.SQL_FLOAT:             'FloatField',
-        Database.SQL_GUID:              'TextField',
-        Database.SQL_INTEGER:           'IntegerField',
-        #Database.SQL_LONGVARBINARY:     ,
-        #Database.SQL_LONGVARCHAR:       ,
-        Database.SQL_NUMERIC:           'DecimalField',
-        Database.SQL_REAL:              'FloatField',
-        Database.SQL_SMALLINT:          'SmallIntegerField',
-        Database.SQL_TINYINT:           'SmallIntegerField',
-        Database.SQL_TYPE_DATE:         'DateField',
-        Database.SQL_TYPE_TIME:         'TimeField',
-        Database.SQL_TYPE_TIMESTAMP:    'DateTimeField',
-        #Database.SQL_VARBINARY:         ,
-        Database.SQL_VARCHAR:           'TextField',
-        Database.SQL_WCHAR:             'CharField',
-        Database.SQL_WLONGVARCHAR:      'TextField',
-        Database.SQL_WVARCHAR:          'TextField',
+        types.StringType:               'TextField',
+        types.UnicodeType:              'TextField',
+        types.LongType:                 'IntegerField',
+        types.IntType:                  'IntegerField',
+        types.BooleanType:              'BooleanField',
+        types.FloatType:                'FloatField',
+        datetime.datetime:              'DateTimeField',
+        datetime.date:                  'DateField',
+        datetime.time:                  'TimeField',
+        decimal.Decimal:                'DecimalField',
     }
 
     def get_table_list(self, cursor):
@@ -92,3 +79,14 @@ WHERE col.TABLE_NAME = %s""", [table_name])
             indexes[row[0]] = {'primary_key': row[1] == 'p', 'unique': False}
         return indexes
 
+    def get_field_type(self, data_type, description):
+        """Hook for a database backend to use the cursor description to
+        match a Django field type to a database column.
+
+        For Oracle, the column data_type on its own is insufficient to
+        distinguish between a FloatField and IntegerField, for example."""
+        try:
+            return self.data_types_reverse[data_type]
+        except:
+            print '*' * 10,'DEBUG add the type', data_type, 'to introspection.py'
+            raise
