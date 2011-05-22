@@ -50,18 +50,6 @@ class DatabaseOperations(BaseDatabaseOperations):
         return "DATE_TRUNC ( %s , %s)" % (lookup_type, field_name)
 
 
-    def field_cast_sql(self, db_type):
-        """
-        Given a column type (e.g. 'BLOB', 'VARCHAR'), returns the SQL necessary
-        to cast it before using it in a WHERE statement. Note that the
-        resulting string should contain a '%s' placeholder for the column being
-        searched against.
-        """
-        if db_type == 'inet':
-            return 'HOST(%s)'
-        return '%s'
-
-
     def fulltext_search_sql(self, field_name):
         """
         Returns the SQL WHERE clause to use in order to perform a full-text
@@ -81,19 +69,6 @@ class DatabaseOperations(BaseDatabaseOperations):
         cursor.execute("SELECT LAST_INSERT_ID()")
         return cursor.fetchone()[0]
 
-    def lookup_cast(self, lookup_type):
-        lookup = '%s'
-
-        # Cast text lookups to text to allow things like filter(x__contains=4)
-        if lookup_type in ('iexact', 'contains', 'icontains', 'startswith',
-                           'istartswith', 'endswith', 'iendswith'):
-            lookup = "%s::text"
-
-        # Use UPPER(x) for case-insensitive lookups; it's faster.
-        if lookup_type in ('iexact', 'icontains', 'istartswith', 'iendswith'):
-            lookup = 'UPPER(%s)' % lookup
-
-        return lookup
 
     def no_limit_value(self):
         return None
