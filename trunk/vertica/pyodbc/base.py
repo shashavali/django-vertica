@@ -88,7 +88,7 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         'exact': '= %s',
         'iexact': '= UPPER(%s)',
         'contains': 'LIKE %s',
-        'icontains': 'LIKE UPPER(%s)',
+        'icontains': 'ILIKE UPPER(%s)',
         'regex': '~ %s',
         'iregex': '~* %s',
         'gt': '> %s',
