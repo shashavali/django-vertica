@@ -67,8 +67,12 @@ class DatabaseOperations(BaseDatabaseOperations):
         column.
         """
         cursor.execute("SELECT LAST_INSERT_ID()")
-        return cursor.fetchone()[0]
-
+        result = cursor.fetchone()[0]
+        if not result:
+            seq_name = cursor.execute("selECT SPLIT_PART(column_default,'''',2) from columns where table_name=%s and column_name=%s",
+                           (table_name, pk_name)).fetchone()[0]
+            result = cursor.execute("select currval(%s)", (seq_name,)).fetchone()[0]
+        return result
 
     def no_limit_value(self):
         return None
