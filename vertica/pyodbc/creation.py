@@ -38,6 +38,7 @@ class DatabaseCreation(BaseDatabaseCreation):
         'FilePathField':     'VARCHAR(%(max_length)s)',
         'FloatField':        'FLOAT',
         'IntegerField':      'INTEGER',
+        'BigIntegerField':   'INTEGER',
         'IPAddressField':    'VARCHAR(15)',
         'NullBooleanField':  'BOOLEAN',
         'OneToOneField':     'INTEGER',
