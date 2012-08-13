@@ -86,7 +86,7 @@ class DatabaseWrapper(BaseDatabaseWrapper):
 
     operators = {
         'exact': '= %s',
-        'iexact': '= UPPER(%s)',
+        'iexact': 'ILIKE %s',
         'contains': 'LIKE %s',
         'icontains': 'ILIKE UPPER(%s)',
         'regex': '~ %s',
